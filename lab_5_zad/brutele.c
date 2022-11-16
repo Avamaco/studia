@@ -30,6 +30,8 @@ int main(){
         }
     }
 
+    if (minimum == t[n - 1] + 1) minimum = 0;
+
     printf("%d %d\n", minimum, maximum);
 
     free(s);

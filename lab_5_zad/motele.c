@@ -4,11 +4,15 @@
 #include <assert.h>
 
 
+#define NOT_FOUND -1
+
+
 typedef struct motel{
     int num;    // który z kolei jest to motel
     int siec;   // do jakiej sieci należy
     int poz;    // odległość od początku autostrady
 } motel;
+
 
 void drukuj(motel m){
     printf("Numer: %d  Sieć: %d  Pozycja: %d\n", m.num, m.siec, m.poz);
@@ -36,7 +40,7 @@ motel szukajInnego(motel * t, int n, motel start, motel inny, bool czy_malejaco)
 
     while (start.siec == inny.siec){
             if((start.num == n - 1 && !czy_malejaco)||(start.num == 0 && czy_malejaco)){    // nie udało się znaleźć motelu spełniającego wymagania
-                motel wynik = {-1, -1, -1};
+                motel wynik = {NOT_FOUND, NOT_FOUND, NOT_FOUND};
                 return wynik;
             }
             start = t[start.num + skok];
@@ -50,7 +54,7 @@ motel szukajInnegoOd2(motel * motele, int n, motel start, motel inny, motel inny
 
     while (start.siec == inny.siec || start.siec == inny2.siec){
             if((start.num == n - 1 && !czy_malejaco)||(start.num == 0 && czy_malejaco)){    // nie udało się znaleźć motelu spełniającego wymagania
-                motel wynik = {-1, -1, -1};
+                motel wynik = {NOT_FOUND, NOT_FOUND, NOT_FOUND};
                 return wynik;
             }
             start = motele[start.num + skok];
@@ -62,12 +66,6 @@ motel szukajInnegoOd2(motel * motele, int n, motel start, motel inny, motel inny
 int main(){
     int n;
     scanf("%d", &n);
-
-    // jest mniej niż 3 motele więc warunki zadania na pewno nie są spełnione
-    if (n < 3){
-        printf("0 0");
-        return 0;
-    }
     
     motel * motele = malloc(n * sizeof(motel));
 
@@ -82,14 +80,14 @@ int main(){
 
     // niezmiennik: wszystkie motele między m1 a m2 są z tej samej sieci co m1
     m2 = szukajInnego(motele, n, m1, m1, false);
-    if (m2.num == -1){  // nie ma 3 roznych sieci
+    if (m2.num == NOT_FOUND){  // nie ma 3 roznych sieci
         printf("0 0");
         return 0;
     }
 
     // niezmiennik: wszystkie motele między m2 a m3 są z tej samej sieci co m1 lub m2
     m3 = szukajInnegoOd2(motele, n, m2, m1, m2, false);
-    if (m3.num == -1){  // nie ma 3 roznych sieci
+    if (m3.num == NOT_FOUND){  // nie ma 3 roznych sieci
         printf("0 0");
         return 0;
     }
@@ -105,11 +103,11 @@ int main(){
 
         // niezmiennik: wszystkie motele między m1 a m2 są z tej samej sieci co m1
         m2 = szukajInnego(motele, n, m2, m1, false);
-        assert(m2.num != -1);   // w najgorszym przypadku m2 osiągnie m3 i się zatrzyma więc zawsze powinien istnieć
+        assert(m2.num != NOT_FOUND);   // w najgorszym przypadku m2 osiągnie m3 i się zatrzyma więc zawsze powinien istnieć
 
         // niezmiennik: wszystkie motele między m2 a m3 są z tej samej sieci co m1 lub m2
         m3 = szukajInnegoOd2(motele, n, m3, m1, m2, false);
-        if (m3.num == -1) break;    // skończyły się trójki
+        if (m3.num == NOT_FOUND) break;    // skończyły się trójki
         
         int maxodl = max(m3.poz - m2.poz, m2.poz - m1.poz);
 
@@ -122,7 +120,7 @@ int main(){
     m3 = motele[n-1];
     m2 = szukajInnego(motele, n, m3, m3, true);
     m1 = szukajInnegoOd2(motele, n, m2, m2, m3, true);
-    assert(m1.num != -1 && m2.num != -1);   // już wiemy, że istnieją przynajmniej 3 sieci
+    assert(m1.num != NOT_FOUND && m2.num != NOT_FOUND);   // już wiemy, że istnieją przynajmniej 3 sieci
 
     najblizsze = min(najblizsze, max(m3.poz - m2.poz, m2.poz - m1.poz));
 
@@ -130,9 +128,9 @@ int main(){
     {
         m3 = motele[m3.num - 1];
         m2 = szukajInnego(motele, n, m2, m3, true);
-        assert(m2.num != -1);
+        assert(m2.num != NOT_FOUND);
         m1 = szukajInnegoOd2(motele, n, m1, m2, m3, true);
-        if (m1.num == -1) break;
+        if (m1.num == NOT_FOUND) break;
 
         int maxodl = max(m3.poz - m2.poz, m2.poz - m1.poz);
 
@@ -145,13 +143,13 @@ int main(){
     lewe[0] = motele[0];
     lewe[1] = szukajInnego(motele, n, lewe[0], lewe[0], false);
     lewe[2] = szukajInnegoOd2(motele, n, lewe[1], lewe[0], lewe[1], false);
-    assert(lewe[1].num != -1 && lewe[2].num != -1);    // już wiemy, że istnieją przynajmniej 3 sieci
+    assert(lewe[1].num != NOT_FOUND && lewe[2].num != NOT_FOUND);    // już wiemy, że istnieją przynajmniej 3 sieci
 
     motel prawe[3];
     prawe[0] = motele[n - 1];
     prawe[1] = szukajInnego(motele, n, prawe[0], prawe[0], true);
     prawe[2] = szukajInnegoOd2(motele, n, prawe[1], prawe[0], prawe[1], true);
-    assert(prawe[1].num != -1 && prawe[2].num != -1);    // już wiemy, że istnieją przynajmniej 3 sieci
+    assert(prawe[1].num != NOT_FOUND && prawe[2].num != NOT_FOUND);    // już wiemy, że istnieją przynajmniej 3 sieci
 
     int najdalsze = 0;
 
@@ -159,7 +157,7 @@ int main(){
         m2 = motele[i];
         m1 = szukajInnego(lewe, 3, lewe[0], m2, false);
         m3 = szukajInnegoOd2(prawe, 3, prawe[0], m2, m1, false);
-        assert(m1.num != -1 && m3.num != -1);   // w lewe[] i prawe[] mamy motele z 3 różnych sieci więc zawsze jakieś się znajdą
+        assert(m1.num != NOT_FOUND && m3.num != NOT_FOUND);   // w lewe[] i prawe[] mamy motele z 3 różnych sieci więc zawsze jakieś się znajdą
 
         int minodl = min(m3.poz - m2.poz, m2.poz - m1.poz); // może wyjść < 0 co jest błędne, ale zostanie to zignorowane bo jest mniejsze od "najdalsze"
         najdalsze = max(najdalsze, minodl);
