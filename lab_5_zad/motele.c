@@ -85,6 +85,8 @@ int main(){
         return 0;
     }
 
+    m1 = motele[m2.num - 1];
+
     // niezmiennik: wszystkie motele między m2 a m3 są z tej samej sieci co m1 lub m2
     m3 = szukajInnegoOd2(motele, n, m2, m1, m2, false);
     if (m3.num == NOT_FOUND){  // nie ma 3 roznych sieci
@@ -99,11 +101,12 @@ int main(){
 
     while (true)
     {
-        m1 = motele[m1.num + 1];
+        motel oldm2 = m2;
+        m2 = motele[m2.num + 1];
 
-        // niezmiennik: wszystkie motele między m1 a m2 są z tej samej sieci co m1
-        m2 = szukajInnego(motele, n, m2, m1, false);
-        assert(m2.num != NOT_FOUND);   // w najgorszym przypadku m2 osiągnie m3 i się zatrzyma więc zawsze powinien istnieć
+        if (oldm2.siec != m2.siec){
+            m1 = oldm2;
+        }
 
         // niezmiennik: wszystkie motele między m2 a m3 są z tej samej sieci co m1 lub m2
         m3 = szukajInnegoOd2(motele, n, m3, m1, m2, false);
@@ -119,6 +122,7 @@ int main(){
 
     m3 = motele[n-1];
     m2 = szukajInnego(motele, n, m3, m3, true);
+    m3 = motele[m2.num + 1];
     m1 = szukajInnegoOd2(motele, n, m2, m2, m3, true);
     assert(m1.num != NOT_FOUND && m2.num != NOT_FOUND);   // już wiemy, że istnieją przynajmniej 3 sieci
 
@@ -126,9 +130,13 @@ int main(){
 
     while (true)
     {
-        m3 = motele[m3.num - 1];
-        m2 = szukajInnego(motele, n, m2, m3, true);
-        assert(m2.num != NOT_FOUND);
+        motel oldm2 = m2;
+        m2 = motele[m2.num - 1];
+
+        if (oldm2.siec != m2.siec){
+            m3 = oldm2;
+        }
+        
         m1 = szukajInnegoOd2(motele, n, m1, m2, m3, true);
         if (m1.num == NOT_FOUND) break;
 
