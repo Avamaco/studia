@@ -153,17 +153,27 @@ int main(){
 
     int najdalsze = 0;
 
+
     for(int i = 0; i < n; i++){
         m2 = motele[i];
-        m1 = szukajInnego(lewe, 3, lewe[0], m2, false);
-        m3 = szukajInnegoOd2(prawe, 3, prawe[0], m2, m1, false);
-        assert(m1.num != NOT_FOUND && m3.num != NOT_FOUND);   // w lewe[] i prawe[] mamy motele z 3 różnych sieci więc zawsze jakieś się znajdą
+
+        if (lewe[0].siec != m2.siec) m1 = lewe[0];
+        else m1 = lewe[1];
+        
+        if (prawe[0].siec != m1.siec && prawe[0].siec != m2.siec) m3 = prawe[0];
+        else if (prawe[1].siec != m1.siec && prawe[1].siec != m2.siec) m3 = prawe[1];
+        else m3 = prawe[2];
+
 
         int minodl = min(m3.poz - m2.poz, m2.poz - m1.poz); // może wyjść < 0 co jest błędne, ale zostanie to zignorowane bo jest mniejsze od "najdalsze"
         najdalsze = max(najdalsze, minodl);
 
-        m3 = szukajInnego(prawe, 3, prawe[0], m2, false);
-        m1 = szukajInnegoOd2(lewe, 3, lewe[0], m2, m3, false);
+        if (prawe[0].siec != m2.siec) m3 = prawe[0];
+        else m3 = prawe[1];
+        
+        if (lewe[0].siec != m3.siec && lewe[0].siec != m2.siec) m1 = lewe[0];
+        else if (lewe[1].siec != m3.siec && lewe[1].siec != m2.siec) m1 = lewe[1];
+        else m1 = lewe[2];
 
         minodl = min(m3.poz - m2.poz, m2.poz - m1.poz);
         najdalsze = max(najdalsze, minodl);
