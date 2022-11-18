@@ -1,10 +1,17 @@
+//#define NDEBUG
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
 
-
 #define NOT_FOUND -1
+
+// nic nie robi. Jest po to by niepotrzebna zmienna nie wywoływała błędu.
+void nic(int x) {
+    x++;
+    return;
+}
 
 
 typedef struct motel{
@@ -29,6 +36,11 @@ int min(int a, int b){
 int max(int a, int b){
     if (a > b) return a;
     return b;
+}
+
+// maksymalna odległość w trójce moteli
+int wieksza_odl(motel m1, motel m2, motel m3){
+    return max(abs(m2.poz - m1.poz), abs(m3.poz - m2.poz));
 }
 
 // Znajduje i zwraca najbliższy motel z innej sieci niż motel "inny".
@@ -65,14 +77,18 @@ motel szukajInnegoOd2(motel * motele, int n, motel start, motel inny, motel inny
 
 int main(){
     int n;
-    scanf("%d", &n);
+    int no_errors;  // funkcja scanf zwraca wartość której nie potrzebuję, ale trzeba ją wykorzystać żeby nie było błędu
+
+    no_errors = scanf("%d", &n);
     
-    motel * motele = malloc(n * sizeof(motel));
+    motel * motele = malloc((size_t)n * sizeof(motel));
 
     for (int i = 0; i < n; i++){
-        scanf("%d%d", &motele[i].siec, &motele[i].poz);
+        no_errors = scanf("%d%d", &motele[i].siec, &motele[i].poz);
         motele[i].num = i;
     }
+
+    nic(no_errors);
 
     // znajduję 3 najbliższe początku autostrady motele z różnych sieci
     motel m1, m2, m3;
@@ -95,7 +111,7 @@ int main(){
     }
 
     // minimum z maksimów odległości trzech moteli należących do różnych sieci
-    int najblizsze = max(m3.poz - m2.poz, m2.poz - m1.poz);
+    int najblizsze = wieksza_odl(m1, m2, m3);
     // maksimum z minimów odległości trzech moteli należących do różnych sieci
     //int najdalsze = min(m3.poz - m2.poz, m2.poz - m1.poz);
 
@@ -112,7 +128,7 @@ int main(){
         m3 = szukajInnegoOd2(motele, n, m3, m1, m2, false);
         if (m3.num == NOT_FOUND) break;    // skończyły się trójki
         
-        int maxodl = max(m3.poz - m2.poz, m2.poz - m1.poz);
+        int maxodl = wieksza_odl(m1, m2, m3);
 
         najblizsze = min(najblizsze, maxodl);
     }
@@ -126,7 +142,7 @@ int main(){
     m1 = szukajInnegoOd2(motele, n, m2, m2, m3, true);
     assert(m1.num != NOT_FOUND && m2.num != NOT_FOUND);   // już wiemy, że istnieją przynajmniej 3 sieci
 
-    najblizsze = min(najblizsze, max(m3.poz - m2.poz, m2.poz - m1.poz));
+    najblizsze = min(najblizsze, wieksza_odl(m1, m2, m3));
 
     while (true)
     {
@@ -140,7 +156,7 @@ int main(){
         m1 = szukajInnegoOd2(motele, n, m1, m2, m3, true);
         if (m1.num == NOT_FOUND) break;
 
-        int maxodl = max(m3.poz - m2.poz, m2.poz - m1.poz);
+        int maxodl = wieksza_odl(m1, m2, m3);
 
         najblizsze = min(najblizsze, maxodl);
     }
