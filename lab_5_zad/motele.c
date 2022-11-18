@@ -7,12 +7,6 @@
 
 #define NOT_FOUND -1
 
-// nic nie robi. Jest po to by niepotrzebna zmienna nie wywoływała błędu.
-void nic(int x) {
-    x++;
-    return;
-}
-
 
 typedef struct motel{
     int num;    // który z kolei jest to motel
@@ -23,6 +17,12 @@ typedef struct motel{
 
 void drukuj(motel m){
     printf("Numer: %d  Sieć: %d  Pozycja: %d\n", m.num, m.siec, m.poz);
+    return;
+}
+
+// nic nie robi. Jest po to by niepotrzebna zmienna nie wywoływała błędu.
+void nic(int x) {
+    x++;
     return;
 }
 
@@ -51,7 +51,7 @@ motel szukajInnego(motel * t, int n, motel start, motel inny, bool czy_malejaco)
     int skok = czy_malejaco ? -1 : 1;
 
     while (start.siec == inny.siec){
-            if((start.num == n - 1 && !czy_malejaco)||(start.num == 0 && czy_malejaco)){    // nie udało się znaleźć motelu spełniającego wymagania
+            if ((start.num == n - 1 && !czy_malejaco)||(start.num == 0 && czy_malejaco)){    // nie udało się znaleźć motelu spełniającego wymagania
                 motel wynik = {NOT_FOUND, NOT_FOUND, NOT_FOUND};
                 return wynik;
             }
@@ -65,7 +65,7 @@ motel szukajInnegoOd2(motel * motele, int n, motel start, motel inny, motel inny
     int skok = czy_malejaco ? -1 : 1;
 
     while (start.siec == inny.siec || start.siec == inny2.siec){
-            if((start.num == n - 1 && !czy_malejaco)||(start.num == 0 && czy_malejaco)){    // nie udało się znaleźć motelu spełniającego wymagania
+            if ((start.num == n - 1 && !czy_malejaco)||(start.num == 0 && czy_malejaco)){    // nie udało się znaleźć motelu spełniającego wymagania
                 motel wynik = {NOT_FOUND, NOT_FOUND, NOT_FOUND};
                 return wynik;
             }
@@ -112,8 +112,6 @@ int main(){
 
     // minimum z maksimów odległości trzech moteli należących do różnych sieci
     int najblizsze = wieksza_odl(m1, m2, m3);
-    // maksimum z minimów odległości trzech moteli należących do różnych sieci
-    //int najdalsze = min(m3.poz - m2.poz, m2.poz - m1.poz);
 
     while (true)
     {
@@ -133,34 +131,6 @@ int main(){
         najblizsze = min(najblizsze, maxodl);
     }
 
-    // Powyższy kod priorytezował minimalną odległość między m1 i m2, a dopiero w drugiej kolejności odległość między m2 i m3.
-    // Poniżej kod będzie robił na odwrót, ponieważ w niektórych przypadkach może to być bardziej optymalne.
-
-    m3 = motele[n-1];
-    m2 = szukajInnego(motele, n, m3, m3, true);
-    m3 = motele[m2.num + 1];
-    m1 = szukajInnegoOd2(motele, n, m2, m2, m3, true);
-    assert(m1.num != NOT_FOUND && m2.num != NOT_FOUND);   // już wiemy, że istnieją przynajmniej 3 sieci
-
-    najblizsze = min(najblizsze, wieksza_odl(m1, m2, m3));
-
-    while (true)
-    {
-        motel oldm2 = m2;
-        m2 = motele[m2.num - 1];
-
-        if (oldm2.siec != m2.siec){
-            m3 = oldm2;
-        }
-        
-        m1 = szukajInnegoOd2(motele, n, m1, m2, m3, true);
-        if (m1.num == NOT_FOUND) break;
-
-        int maxodl = wieksza_odl(m1, m2, m3);
-
-        najblizsze = min(najblizsze, maxodl);
-    }
-
     printf("%d ", najblizsze);
 
     motel lewe[3];
@@ -175,10 +145,10 @@ int main(){
     prawe[2] = szukajInnegoOd2(motele, n, prawe[1], prawe[0], prawe[1], true);
     assert(prawe[1].num != NOT_FOUND && prawe[2].num != NOT_FOUND);    // już wiemy, że istnieją przynajmniej 3 sieci
 
+    // maksimum z minimów odległości trzech moteli należących do różnych sieci
     int najdalsze = 0;
 
-
-    for(int i = 0; i < n; i++){
+    for (int i = 0; i < n; i++){
         m2 = motele[i];
 
         if (lewe[0].siec != m2.siec) m1 = lewe[0];
@@ -187,7 +157,6 @@ int main(){
         if (prawe[0].siec != m1.siec && prawe[0].siec != m2.siec) m3 = prawe[0];
         else if (prawe[1].siec != m1.siec && prawe[1].siec != m2.siec) m3 = prawe[1];
         else m3 = prawe[2];
-
 
         int minodl = min(m3.poz - m2.poz, m2.poz - m1.poz); // może wyjść < 0 co jest błędne, ale zostanie to zignorowane bo jest mniejsze od "najdalsze"
         najdalsze = max(najdalsze, minodl);
@@ -203,7 +172,7 @@ int main(){
         najdalsze = max(najdalsze, minodl);
     }
 
-    printf("%d\n", najdalsze);
+    printf("%d", najdalsze);
     
     free(motele);
 
