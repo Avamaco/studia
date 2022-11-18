@@ -98,6 +98,7 @@ int main(){
     m2 = szukajInnego(motele, n, m1, m1, false);
     if (m2.num == NOT_FOUND){  // nie ma 3 roznych sieci
         printf("0 0");
+        free(motele);
         return 0;
     }
 
@@ -107,6 +108,7 @@ int main(){
     m3 = szukajInnegoOd2(motele, n, m2, m1, m2, false);
     if (m3.num == NOT_FOUND){  // nie ma 3 roznych sieci
         printf("0 0");
+        free(motele);
         return 0;
     }
 
