@@ -14,6 +14,11 @@ typedef struct motel{
     int poz;    // odległość od początku autostrady
 } motel;
 
+// true jeśli sieci m1, m2, m3 są parami różne, false w przeciwnym przypadku
+bool czyRozneSieci(motel m1, motel m2, motel m3){
+    return (m1.siec != m2.siec && m2.siec != m3.siec && m3.siec != m1.siec);
+}
+
 
 void drukuj(motel m){
     printf("Numer: %d  Sieć: %d  Pozycja: %d\n", m.num, m.siec, m.poz);
@@ -21,7 +26,7 @@ void drukuj(motel m){
 }
 
 // nic nie robi. Jest po to by niepotrzebna zmienna nie wywoływała błędu.
-void nic(int x) {
+void nic(int x){
     x++;
     return;
 }
@@ -64,7 +69,7 @@ motel szukajInnego(motel * t, int n, motel start, motel inny, bool czy_malejaco)
 motel szukajInnegoOd2(motel * motele, int n, motel start, motel inny, motel inny2, bool czy_malejaco){
     int skok = czy_malejaco ? -1 : 1;
 
-    while (start.siec == inny.siec || start.siec == inny2.siec){
+    while (!czyRozneSieci(start, inny, inny2)){
             if ((start.num == n - 1 && !czy_malejaco)||(start.num == 0 && czy_malejaco)){    // nie udało się znaleźć motelu spełniającego wymagania
                 motel wynik = {NOT_FOUND, NOT_FOUND, NOT_FOUND};
                 return wynik;
@@ -115,8 +120,7 @@ int main(){
     // minimum z maksimów odległości trzech moteli należących do różnych sieci
     int najblizsze = wieksza_odl(m1, m2, m3);
 
-    while (true)
-    {
+    while (true){
         motel oldm2 = m2;
         m2 = motele[m2.num + 1];
 
@@ -156,8 +160,8 @@ int main(){
         if (lewe[0].siec != m2.siec) m1 = lewe[0];
         else m1 = lewe[1];
         
-        if (prawe[0].siec != m1.siec && prawe[0].siec != m2.siec) m3 = prawe[0];
-        else if (prawe[1].siec != m1.siec && prawe[1].siec != m2.siec) m3 = prawe[1];
+        if (czyRozneSieci(prawe[0], m1, m2)) m3 = prawe[0];
+        else if (czyRozneSieci(prawe[1], m1, m2)) m3 = prawe[1];
         else m3 = prawe[2];
 
         int minodl = min(m3.poz - m2.poz, m2.poz - m1.poz); // może wyjść < 0 co jest błędne, ale zostanie to zignorowane bo jest mniejsze od "najdalsze"
@@ -166,8 +170,8 @@ int main(){
         if (prawe[0].siec != m2.siec) m3 = prawe[0];
         else m3 = prawe[1];
         
-        if (lewe[0].siec != m3.siec && lewe[0].siec != m2.siec) m1 = lewe[0];
-        else if (lewe[1].siec != m3.siec && lewe[1].siec != m2.siec) m1 = lewe[1];
+        if (czyRozneSieci(lewe[0], m3, m2)) m1 = lewe[0];
+        else if (czyRozneSieci(lewe[1], m3, m2)) m1 = lewe[1];
         else m1 = lewe[2];
 
         minodl = min(m3.poz - m2.poz, m2.poz - m1.poz);
