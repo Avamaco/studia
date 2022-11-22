@@ -79,11 +79,11 @@ int czyNaKole(punkt p, kartka a) {
 int main() {
     int n, q;
     scanf("%d %d", &n, &q);
-    kartka * kartki = (kartka *)malloc((n + 1) * sizeof(kartka));
+    kartka * kartki = (kartka*)malloc((size_t)(n + 1) * sizeof(kartka));
 
     // wczytywanie opisów kartek
     for (int i = 1; i < n + 1; i++) {
-        scanf("%c", &kartki[i].typ);
+        scanf("%s", &kartki[i].typ);
         switch (kartki[i].typ) {
           case 'P':
             scanf("%lf %lf %lf %lf", &kartki[i].p1.x, &kartki[i].p1.y, &kartki[i].p2.x, &kartki[i].p2.y);
