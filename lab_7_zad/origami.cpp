@@ -69,7 +69,7 @@ int czyNaProstokacie(punkt p, kartka a) {
 
 // zwraca 1 punkt leży na kole (włącznie z brzegiem), 0 w.p.p.
 int czyNaKole(punkt p, kartka a) {
-    double kwadrat_odl = (p.x - a.p1.x) * (p.x - a.p1.x) + (p.y - a.p1.y) + (p.y - a.p1.y);
+    double kwadrat_odl = (p.x - a.p1.x) * (p.x - a.p1.x) + (p.y - a.p1.y) * (p.y - a.p1.y);
     if (kwadrat_odl < a.r * a.r || equals(kwadrat_odl, a.r * a.r))
         return 1;
     return 0;
@@ -101,13 +101,14 @@ int main() {
 
     // wykonywanie zapytań
     for (int i = 0; i < q; i++) {
-        stack <punkt> dziury;
-        int k;
+        stack <punkt> dziury; // stos współrzędnych wszystkich dziur po przebiciu współrzędnych szpilką
+        int k; // indeks kartki, którą badamy
         punkt p;
 
         scanf("%d %lf %lf", &k, &p.x, &p.y);
         dziury.push(p);
 
+        // odginam zagięcie w kartce i sprawdzam gdzie będą dziury w tak odgiętej kartce. Wykonuję to po kolei ze wszystkimi zagięciami.
         while (kartki[k].typ == 'Z') {
             kartka badana = kartki[k];
             stack <punkt> temp;
