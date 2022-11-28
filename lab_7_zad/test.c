@@ -11,15 +11,11 @@ int crossProduct(double x1, double y1, double x2, double y2, double x3, double y
 }
 
 int main() {
-    double x1, y1, x2, y2;
-    scanf("%lf%lf%lf%lf", &x1, &y1, &x2, &y2);
+    int n;
+    int errory;
 
-    for (double y3 = 5.0; y3 > -5.5; y3 -= 1.0) {
-        for (double x3 = -5.0; x3 < 5.5; x3 += 1.0) {
-            printf("%d ", crossProduct(x1, y1, x2, y2, x3, y3));
-        }
-        printf("\n");
-    }
+    errory = scanf("%d", &n);
+    printf("%d", errory);
 
     return 0;
 }
