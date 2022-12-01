@@ -21,7 +21,7 @@ typedef struct {
     Punkt P1, P2;
 }Zgiecie;
 
-typedef enum{P='P', K='K', Z='Z'} Repr;
+typedef enum{Pr='P', Ko='K', Zg='Z'} Repr;
 typedef union {Prostokat p; Kolo k; Zgiecie z;} Val;
 
 typedef struct {
@@ -39,16 +39,14 @@ int Czy_w_kole(Punkt X, Kolo K){
     return ((X.x - O.x) * (X.x - O.x) + (X.y - O.y) * (X.y - O.y) <= r * r)? 1 : 0;
 }
 
-Punkt Przesun_o_P(Punkt X, Punkt P){
-    Punkt wynik;
-    wynik.x = X.x - P.x;
-    wynik.y = X.y - P.y;
-    return wynik;
+void Przesun_o_P(Punkt *X, Punkt P){
+    X->x -= P.x;
+    X->y -= P.y;
 }
 
 int prawo_lewo(Punkt X, Punkt P1, Punkt P2){
-    P2 = Przesun_o_P(P2, P1);
-    X = Przesun_o_P(X, P1);
+    Przesun_o_P(&P2, P1);
+    Przesun_o_P(&X, P1);
     double iloczyn_wektorowy = X.x * P2.y - X.y * P2.x;
     if(iloczyn_wektorowy > 0){
         return 1;
@@ -62,15 +60,15 @@ int prawo_lewo(Punkt X, Punkt P1, Punkt P2){
 int Ile_w_punkcie(Punkt X, Ksztalt ksztalt, Ksztalt tab[]);
 
 Punkt Odbij(Punkt X, Punkt P1, Punkt P2){
-    P2 = Przesun_o_P(P2, P1);
-    X = Przesun_o_P(X, P1);
+    Przesun_o_P(&P2, P1); //
+    Przesun_o_P(&X, P1); // przesuniecie ukladu wspolzednych na srodek
     double complex CP = P2.x + P2.y * I, CX = X.x + X.y * I;
-    CX = conj(CX * conj(CP) / cabs(CP)) * cabs(CP) / conj(CP);
+    CX = conj(CX * conj(CP) / cabs(CP)) * cabs(CP) / conj(CP); //odbicie punktu X wzgledem vektora P2
     X.x = creal(CX);
     X.y = cimag(CX);
     P1.x = -P1.x;
     P1.y = -P1.y;
-    Przesun_o_P(X, P1);
+    Przesun_o_P(&X, P1); //przesuniecie ukladu wpsolzednych z powrotem tam bdzie byl
     return X;
 }
 
@@ -90,11 +88,11 @@ int Ile_w_zgieciu(Punkt X, Zgiecie Z, Ksztalt tab[]){
 
 int Ile_w_punkcie(Punkt X, Ksztalt ksztalt, Ksztalt tab[]){
     switch (ksztalt.repr) {
-        case P:
+        case Pr:
             return Czy_w_prostokacie(X, ksztalt.val.p);
-        case K:
+        case Ko:
             return Czy_w_kole(X, ksztalt.val.k);
-        case Z:
+        case Zg:
             return Ile_w_zgieciu(X, ksztalt.val.z, tab);
         default:
             assert(0);
@@ -108,14 +106,14 @@ int main() {
     for(int i = 1; i<=n; i++){
         scanf(" %c", (char*) &(tab[i].repr));
         switch (tab[i].repr) {
-            case P:
+            case Pr:
                 scanf("%lf %lf %lf %lf", &(tab[i].val.p.LD.x), &(tab[i].val.p.LD.y),
-                      &(tab[i].val.p.PG.x)), &(tab[i].val.p.PG.y);
+                      &(tab[i].val.p.PG.x), &(tab[i].val.p.PG.y));
                 break;
-            case K:
+            case Ko:
                 scanf("%lf %lf %lf", &(tab[i].val.k.O.x), &(tab[i].val.k.O.y), &(tab[i].val.k.r));
                 break;
-            case Z:
+            case Zg:
                 scanf("%d %lf %lf %lf %lf", &(tab[i].val.z.id_ksztaltu), &(tab[i].val.z.P1.x),
                       &(tab[i].val.z.P1.y), &(tab[i].val.z.P2.x), &(tab[i].val.z.P2.y));
                 break;
@@ -127,7 +125,8 @@ int main() {
         int id_ksztaltu;
         Punkt X;
         scanf("%d %lf %lf", &id_ksztaltu, &(X.x), &(X.y));
-        Ile_w_punkcie(X, tab[id_ksztaltu], tab);
+        printf("%d\n", Ile_w_punkcie(X, tab[id_ksztaltu], tab));
     }
+    free(tab);
     return 0;
 }

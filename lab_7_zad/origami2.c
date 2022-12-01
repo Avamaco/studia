@@ -107,30 +107,30 @@ void drukujError() {
 
 int main() {
     int n, q;
-    int no_errors;
-    no_errors = scanf("%d %d", &n, &q);
+    int ile_wczytano;
+    ile_wczytano = scanf("%d %d", &n, &q);
 
-    if (no_errors == 0) drukujError();
+    if (ile_wczytano < 2) drukujError();
 
     kartka * kartki = (kartka*)malloc((size_t)(n + 1) * sizeof(kartka));
 
     // wczytywanie opisów kartek
     for (int i = 1; i < n + 1; i++) {
-        no_errors = scanf("%s", &kartki[i].typ);
-        if (no_errors == 0) drukujError();
+        ile_wczytano = scanf("%s", &kartki[i].typ);
+        if (ile_wczytano == 0) drukujError();
 
         switch (kartki[i].typ) {
           case 'P':
-            no_errors = scanf("%lf %lf %lf %lf", &kartki[i].p1.x, &kartki[i].p1.y, &kartki[i].p2.x, &kartki[i].p2.y);
-            if (no_errors == 0) drukujError();
+            ile_wczytano = scanf("%lf %lf %lf %lf", &kartki[i].p1.x, &kartki[i].p1.y, &kartki[i].p2.x, &kartki[i].p2.y);
+            if (ile_wczytano < 4) drukujError();
             break;
           case 'K':
-            no_errors = scanf("%lf %lf %lf", &kartki[i].p1.x, &kartki[i].p1.y, &kartki[i].r);
-            if (no_errors == 0) drukujError();
+            ile_wczytano = scanf("%lf %lf %lf", &kartki[i].p1.x, &kartki[i].p1.y, &kartki[i].r);
+            if (ile_wczytano < 3) drukujError();
             break;
           case 'Z':
-            no_errors = scanf("%d %lf %lf %lf %lf", &kartki[i].k, &kartki[i].p1.x, &kartki[i].p1.y, &kartki[i].p2.x, &kartki[i].p2.y);
-            if (no_errors == 0) drukujError();
+            ile_wczytano = scanf("%d %lf %lf %lf %lf", &kartki[i].k, &kartki[i].p1.x, &kartki[i].p1.y, &kartki[i].p2.x, &kartki[i].p2.y);
+            if (ile_wczytano < 5) drukujError();
             break;
           default:
             drukujError();
@@ -143,8 +143,8 @@ int main() {
         int k; // indeks kartki, którą badamy
         punkt p;
 
-        no_errors = scanf("%d %lf %lf", &k, &p.x, &p.y);
-        if (no_errors == 0) drukujError();
+        ile_wczytano = scanf("%d %lf %lf", &k, &p.x, &p.y);
+        if (ile_wczytano < 3) drukujError();
 
         int suma;
 
