@@ -5,12 +5,14 @@
 
 
 int numer;
-kolejka *okienka; 
+int liczba_okienek;
 
 
-struct kolejka {
+typedef struct kolejka {
     interesant *poczatek, *koniec;
-}
+} kolejka;
+
+kolejka *okienka;
 
 
 void link(interesant *kto, interesant *old, interesant *nw) {
@@ -23,6 +25,7 @@ void link(interesant *kto, interesant *old, interesant *nw) {
 
 void otwarcie_urzedu(int m) {
     numer = 0;
+    liczba_okienek = m;
     okienka = (kolejka*) malloc((size_t)m * sizeof(kolejka));
 
     for (int i = 0; i < m; i++) {
@@ -55,7 +58,7 @@ void idz_na_koniec(interesant *kto, int k) {
 
 
 interesant *nowy_interesant(int k) {
-    interesant *nowy = malloc(sizeof(interesant));
+    interesant *nowy = (interesant*)malloc(sizeof(interesant));
 
     nowy->numerek = numer;
     numer++;
@@ -209,5 +212,25 @@ void naczelnik(int k) {
 
 
 std::vector<interesant *> zamkniecie_urzedu() {
-    // TODO
+    std::vector<interesant *> wynik;
+
+    for (int i = 0; i < liczba_okienek; i++) {
+        interesant *temp1 = okienka[i].poczatek;
+        interesant *temp2 = okienka[i].poczatek;
+        interesant *kolejny = okienka[i].poczatek->l2;
+
+        while (kolejny != okienka[i].koniec) {
+            wynik.push_back(kolejny);
+            temp2 = temp1;
+            temp1 = kolejny;
+            kolejny = nastepny(kolejny, temp2);
+        }
+
+        free(okienka[i].poczatek);
+        free(okienka[i].koniec);
+    }
+
+    free(okienka);
+
+    return wynik;
 }

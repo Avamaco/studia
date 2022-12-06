@@ -64,4 +64,6 @@ int main() {
   assert(numerek(v[0]) == 8);
   for (int i = 0; i < 4; ++i)
     free(v[i]);
+  
+  printf("Wszystko działa uwu\n");
 }
