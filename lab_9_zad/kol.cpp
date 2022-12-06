@@ -7,14 +7,14 @@
 int numer;
 int liczba_okienek;
 
-
+// Dwustronna kolejka ze scalaniem i odwracaniem, jak na wykładzie
 typedef struct kolejka {
     interesant *poczatek, *koniec;
 } kolejka;
 
 kolejka *okienka;
 
-
+// Zamienia starego sąsiada interesanta na nowego
 void link(interesant *kto, interesant *old, interesant *nw) {
     if (kto->l1 == old)
         kto->l1 = nw;
@@ -43,7 +43,7 @@ void otwarcie_urzedu(int m) {
     return;
 }
 
-
+// Ustawia interesanta na końcu wybranej kolejki
 void idz_na_koniec(interesant *kto, int k) {
     interesant *koniec_kolejki = okienka[k].koniec;
     interesant *ostatni = koniec_kolejki->l1;

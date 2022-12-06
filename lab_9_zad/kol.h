@@ -13,9 +13,9 @@
 // Należy wypełnić
 struct interesant {
     // Twój kod zaczyna się tu
-    interesant * l1;
-    interesant * l2;
-    int numerek;
+    interesant * l1; // Jeden z sąsiadów interesanta, ale nie wiadomo czy przed nim czy za nim
+    interesant * l2; // Drugi z sąsiadów 
+    int numerek; // Numerek przypisywany na start każdemu interesantowi
     // A kończy tu
 };
 
