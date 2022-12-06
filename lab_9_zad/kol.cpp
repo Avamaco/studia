@@ -115,9 +115,83 @@ void zamkniecie_okienka(int k1, int k2) {
     return;
 }
 
+// pomaga iterować się po kolejnych interesantach
+interesant *nastepny(interesant *obecny, interesant *poprzedni) {
+    if (obecny->l1 == poprzedni)
+        return obecny->l2;
+    return obecny->l1;
+}
+
+// szuka w czasie liniowym, w którym kierunku względem i1 stoi i2
+//  wynik 0 oznacza że to ta sama osoba
+//  wynik 1 oznacza że stoi w kierunku l1
+//  wynik 2 oznacza że stoi w kierunku l2
+int szukajKierunku(interesant *i1, interesant *i2) {
+    if (i1 == i2)
+        return 0;
+
+    interesant *lewo1 = i1;
+    interesant *lewo2 = i1->l1;
+    interesant *prawo1 = i1;
+    interesant *prawo2 = i1->l2;
+
+    while (true) {
+        if (!lewo2)
+            return 2;
+        if (lewo2 == i2)
+            return 1;
+        if (!prawo2)
+            return 1;
+        if (prawo2 == i2)
+            return 2;
+        
+        interesant *temp = lewo1;
+        lewo1 = lewo2;
+        lewo2 = nastepny(lewo2, temp);
+
+        temp = prawo1;
+        prawo1 = prawo2;
+        prawo2 = nastepny(prawo2, temp);
+    }
+}
+
 
 std::vector<interesant *> fast_track(interesant *i1, interesant *i2) {
-    // TODO
+    int strona = szukajKierunku(i1, i2);
+
+    if (strona == 0) {
+        std::vector<interesant *> wynik;
+        wynik.push_back(i1);
+        link(i1->l1, i1, i1->l2);
+        link(i1->l2, i1, i1->l1);
+        return wynik;
+    }
+
+    interesant *kolejny = (strona == 1) ? i1->l1 : i1->l2;
+    
+    interesant *temp1 = i1;
+    interesant *temp2 = i1;
+
+    std::vector<interesant *> wynik;
+    wynik.push_back(i1);
+    
+    while (kolejny != i2) {
+        wynik.push_back(kolejny);
+        temp2 = temp1;
+        temp1 = kolejny;
+        kolejny = nastepny(kolejny, temp2);
+    }
+
+    wynik.push_back(i2);
+
+    interesant *scal1, *scal2;
+    scal1 = (strona == 1) ? i1->l2 : i1->l1;
+    scal2 = nastepny(kolejny, temp1);
+
+    link(scal1, i1, scal2);
+    link(scal2, i2, scal1);
+
+    return wynik;
 }
 
 
@@ -131,4 +205,9 @@ void naczelnik(int k) {
     okienka[k].poczatek->l2 = ostatni;
 
     return;
+}
+
+
+std::vector<interesant *> zamkniecie_urzedu() {
+    // TODO
 }
