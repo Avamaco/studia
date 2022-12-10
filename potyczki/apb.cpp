@@ -1,0 +1,1 @@
+// jk, łatwiej w pythonie
