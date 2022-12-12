@@ -23,6 +23,11 @@ void link(interesant *kto, interesant *old, interesant *nw) {
 }
 
 
+bool czypusta(kolejka k) {
+    return (k.poczatek->l2 == k.koniec);
+}
+
+
 void otwarcie_urzedu(int m) {
     numer = 0;
     liczba_okienek = m;
@@ -75,8 +80,7 @@ int numerek(interesant *i) {
 
 
 interesant *obsluz(int k) {
-    if (okienka[k].poczatek->l2 == okienka[k].koniec)
-        return NULL;
+    if (czypusta(okienka[k])) return NULL;
     
     interesant *poczatek_kolejki = okienka[k].poczatek;
     interesant *pierwszy = poczatek_kolejki->l2;
@@ -100,7 +104,7 @@ void zmiana_okienka(interesant *i, int k) {
 
 
 void zamkniecie_okienka(int k1, int k2) {
-    if (okienka[k1].poczatek->l2 == okienka[k1].koniec) return;
+    if (czypusta(okienka[k1])) return;
 
     interesant *pierwszy = okienka[k1].poczatek->l2;
     interesant *ostatni = okienka[k1].koniec->l1;
@@ -199,6 +203,8 @@ std::vector<interesant *> fast_track(interesant *i1, interesant *i2) {
 
 
 void naczelnik(int k) {
+    if (czypusta(okienka[k])) return;
+
     interesant *pierwszy = okienka[k].poczatek->l2;
     interesant *ostatni = okienka[k].koniec->l1;
 
