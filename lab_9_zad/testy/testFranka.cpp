@@ -52,4 +52,5 @@ int main() {
         free(vi[i]);
 
     assert(hsh == 513158497494);
+    printf("Działa.");
 }

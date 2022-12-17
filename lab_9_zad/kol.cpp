@@ -27,6 +27,13 @@ bool czypusta(kolejka k) {
     return (k.poczatek->l2 == k.koniec);
 }
 
+// pomaga iterować się po kolejnych interesantach
+interesant *nastepny(interesant *obecny, interesant *poprzedni) {
+    if (obecny->l1 == poprzedni)
+        return obecny->l2;
+    return obecny->l1;
+}
+
 
 void otwarcie_urzedu(int m) {
     numer = 0;
@@ -84,7 +91,7 @@ interesant *obsluz(int k) {
     
     interesant *poczatek_kolejki = okienka[k].poczatek;
     interesant *pierwszy = poczatek_kolejki->l2;
-    interesant *drugi = pierwszy->l2;
+    interesant *drugi = nastepny(pierwszy, poczatek_kolejki);
 
     poczatek_kolejki->l2 = drugi;
     link(drugi, pierwszy, poczatek_kolejki);
@@ -120,13 +127,6 @@ void zamkniecie_okienka(int k1, int k2) {
     okienka[k2].koniec->l1 = ostatni;
 
     return;
-}
-
-// pomaga iterować się po kolejnych interesantach
-interesant *nastepny(interesant *obecny, interesant *poprzedni) {
-    if (obecny->l1 == poprzedni)
-        return obecny->l2;
-    return obecny->l1;
 }
 
 // szuka w czasie liniowym, w którym kierunku względem i1 stoi i2
