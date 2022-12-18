@@ -19,8 +19,6 @@ struct interesant {
     // A kończy tu
 };
 
-void xd();
-
 /**
  * @brief Inicjuje bibliotekę
  *

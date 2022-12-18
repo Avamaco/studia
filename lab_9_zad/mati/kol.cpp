@@ -46,6 +46,10 @@ namespace kol {
 		else
 			return el->i1;
 	}
+
+	bool czy_pusta(int k) {
+		return kol::kolejki[k].poczatek->i2 == kol::kolejki[k].koniec;
+	}
 }
 
 void otwarcie_urzedu(int m) {
@@ -74,6 +78,8 @@ interesant* nowy_interesant(int k) {
 }
 
 int numerek (interesant *i) {
+	if (i == NULL)
+		return 0;
 	return i->numerek;
 }
 
@@ -92,9 +98,11 @@ void zmiana_okienka(interesant *i, int k) {
 }
 
 void zamkniecie_okienka(int k1, int k2) {
+	if (kol::czy_pusta(k1))
+		return;
+	
 	interesant *pierwszy = kol::kolejki[k1].poczatek->i2;
 	interesant *ostatni = kol::kolejki[k1].koniec->i2;
-	// std::cout << "zamknc_ok: " << pierwszy << "\n";
 
 	kol::link(pierwszy, kol::kolejki[k2].koniec->i2, kol::kolejki[k1].poczatek);
 	kol::link(kol::kolejki[k2].koniec->i2, pierwszy, kol::kolejki[k2].koniec);
@@ -106,14 +114,15 @@ void zamkniecie_okienka(int k1, int k2) {
 	kol::kolejki[k1].koniec->i2 = kol::kolejki[k1].poczatek;
 }
 
-void xd() {
-	// std::cout << "xddmalsdnkajndkjlasndkl " << kol::kolejki[0].poczatek->i1 << "\n";
-}
-
 std::vector<interesant*> fast_track(interesant *i1, interesant *i2) {
 	std::vector<interesant*> res1, res2;
 	res1.push_back(i1);
 	res2.push_back(i1);
+
+	if (i1 == i2) {
+		kol::usun_interesanta(i1);
+		return res1;
+	}
 
 	interesant *lewo = i1->i1;
 	interesant *prawo = i1->i2;
@@ -136,7 +145,6 @@ std::vector<interesant*> fast_track(interesant *i1, interesant *i2) {
 	}
 	
 	if (lewo == i2) {
-		// std::cout << "lewo\n";
 		res1.push_back(lewo);
 
 		interesant *nastepny = kol::nastepny_interesant(lewo, poprz_lewo);
@@ -146,41 +154,33 @@ std::vector<interesant*> fast_track(interesant *i1, interesant *i2) {
 		return res1;
 	}
 	else { // prawo == i2
-		// std::cout << "prawo " << (prawo == i2) << "\n";
 		res2.push_back(prawo);
 
 		interesant *nastepny = kol::nastepny_interesant(prawo, poprz_prawo);
-		// std::cout << (nastepny == kol::kolejki[0].koniec) << " asdhashjgdalk " << prawo << " " << kol::kolejki[0].koniec->i2 << " " << i1->i1 << " " << nastepny->i1 << "\n";
 		kol::link(i1->i1, nastepny, i1);
 		kol::link(nastepny, i1->i1, i2);
-		// std::cout << "asdhashjgdalk " << kol::kolejki[0].koniec->i2 << "\n";
 
 		return res2;
 	}
 }
 
 void naczelnik(int k) {
-	// std::cout << "naczelnik" << k << " " << kol::kolejki[0].poczatek->i2 << "\n";
 	interesant* tmp = kol::kolejki[k].poczatek;
 	kol::kolejki[k].poczatek = kol::kolejki[k].koniec;
 	kol::kolejki[k].koniec = tmp;
-	// std::cout << "naczelnikPO" << k << " " << kol::kolejki[0].poczatek->i2 << "\n";
 }
 
 std::vector<interesant*> zamkniecie_urzedu() {
 	std::vector<interesant*> res;
 
 	for (unsigned int k = 0; k < kol::kolejki.size(); k++) {
-		// std:: cout << k << ": ";
 		while (true) {
 			interesant *i = obsluz(k);
-			// std::cout << i << " ";
 			if (i == NULL)
 				break;
 
 			res.push_back(i);
 		}
-		// std::cout << std::endl;
 
 		free(kol::kolejki[k].poczatek);
 		free(kol::kolejki[k].koniec);
