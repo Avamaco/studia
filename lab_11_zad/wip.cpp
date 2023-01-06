@@ -21,5 +21,10 @@ int main() {
 
     init(x);
 
+    int w = nextInRange(4, 42, 94);
+    printf("Wynik: %d Poprwany wynik: 5\n", w);
+
+    done();
+
     return 0;
 }
