@@ -14,6 +14,8 @@ struct node {
 };
 
 
+
+
 std::vector<bin_tree> korzenie;
 int rozmiar;
 std::vector<int> snd;
