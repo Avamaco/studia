@@ -17,7 +17,6 @@ struct node {
 std::vector<bin_tree> korzenie;
 int rozmiar;
 std::vector<int> snd;
-std::vector<int> przenumerowany;
 std::vector<bin_tree> wskazniki;
 
 // rezerwuje pamięć dla wierzchołka w drzewie oraz dodaje go do wektora wszystkich mallocowanych wskaźników dla łatwego usunięcia na koniec
@@ -25,32 +24,6 @@ bin_tree utworz_wierzcholek() {
     bin_tree wynik = (bin_tree)malloc(sizeof(node));
     wskazniki.push_back(wynik);
     return wynik;
-}
-
-
-void drukujdrzewo(bin_tree x) {
-    std::vector<bin_tree> kolejka;
-    kolejka.push_back(x);
-    int pow2 = 2;
-    for (int i = 0; i < kolejka.size(); i++) {
-        printf("%lld ", kolejka[i]->first_in_range);
-        if (kolejka[i]->left) kolejka.push_back(kolejka[i]->left);
-        if (kolejka[i]->right) kolejka.push_back(kolejka[i]->right);
-        if (i + 2 == pow2) {
-            printf("\n");
-            pow2 *= 2;
-        }
-    }
-}
-
-
-void drukujdebug() {
-    printf("snd: ");
-    for (int i = 0; i < snd.size(); i++) printf("%d ", snd[i]);
-    printf("\nprzenumerowany: ");
-    for (int i = 0; i < przenumerowany.size(); i++) printf("%d ", przenumerowany[i]);
-    printf("\n\n");
-
 }
 
 
@@ -62,11 +35,8 @@ std::vector<int> sort_no_duplicates(const std::vector<int> &x) {
 }
 
 
-std::vector<int> przenumeruj(const std::vector<int> &x, std::vector<int> &klucz) {
-    std::vector<int> wynik;
-    for (int i = 0; i < x.size(); i++) {
-        wynik.push_back(std::lower_bound(klucz.begin(), klucz.end(), x[i]) - klucz.begin());
-    }
+int przenumeruj(int x) {
+    int wynik = std::lower_bound(snd.begin(), snd.end(), x) - snd.begin();
     return wynik;
 }
 
@@ -138,33 +108,24 @@ void nowy_korzen(int numer_drzewa, int liczba) {
 // tworzy tyle drzew przedziałowych ile liczb ma wektor x. Te drzewa mają wspólne wierzchołki.
 void init(const std::vector<int> &x) {
     snd = sort_no_duplicates(x);
-    przenumerowany = przenumeruj(x, snd);
     
     rozmiar = x.size();
     korzenie.resize(rozmiar + 1);
 
-    //drukujdebug();
-
     korzenie[rozmiar] = puste_drzewo_przedzialowe(nastepna_potega_dwojki(rozmiar), 0);
     for (int i = rozmiar - 1; i >= 0; i--)
-        nowy_korzen(i, przenumerowany[i]);
-    // for (int i = rozmiar; i >= 0; i--)
-    //     drukujdrzewo(korzenie[i]);
+        nowy_korzen(i, przenumeruj(x[i]));
 
     return;
 }
 
 
 int _nextInRange(bin_tree t, int a, int b) {
-    //printf("Parametry obecnego drzewa: min = %lld, max = %lld, fir = %lld\n", t->range_min, t->range_max, t->first_in_range);
-    if (t->range_max < a || t->range_min > b) {
-        //printf("Przedziały rozłączne. Wychodzę.\n");
+    if (t->range_max < a || t->range_min > b)
         return rozmiar + 1;
-    }
-    if (t->range_min >= a && t->range_max <= b) {
-        //printf("Przedziały zawarte! Zwracam %lld.\n", t->first_in_range);
+
+    if (t->range_min >= a && t->range_max <= b)
         return t->first_in_range;
-    }
     
     int min1 = _nextInRange(t->left, a, b);
     int min2 = _nextInRange(t->right, a, b);
@@ -177,13 +138,12 @@ int _nextInRange(bin_tree t, int a, int b) {
 
 // przechodzi po drzewie przedziałowym zawierającym tylko dane od i do końca wektora.
 int nextInRange(int i, int a, int b) {
-    int a_po_przenumerowaniu = std::lower_bound(snd.begin(), snd.end(), a) - snd.begin();
+    int a_po_przenumerowaniu = przenumeruj(a);
 
-    int b_po_przenumerowaniu = std::lower_bound(snd.begin(), snd.end(), b) - snd.begin();
+    int b_po_przenumerowaniu = przenumeruj(b);
     // jeśli górny koniec zakresu nie występuje wśród liczb to porównujemy do ostatniej mniejszej a nie pierwszej większej
-    if (b != snd[b_po_przenumerowaniu]) b_po_przenumerowaniu--;
-
-    //printf("Nowe a i b: %d %d\n", a_po_przenumerowaniu, b_po_przenumerowaniu);
+    if (b != snd[b_po_przenumerowaniu])
+        b_po_przenumerowaniu--;
     
     int wynik = _nextInRange(korzenie[i], a_po_przenumerowaniu, b_po_przenumerowaniu);
 
