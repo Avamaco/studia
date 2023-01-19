@@ -2,32 +2,32 @@
 #include <cstdlib>
 #include <vector>
 #include <algorithm>
+#include <utility>
 
-typedef std::vector<std::vector<int>> ksztalt;
+// przechowuje współrzędne wszystkich pól zajętych przez kształt
+typedef std::vector<std::pair<int, int>> ksztalt; 
 
-struct klocek {
-    int ile_obrotow;
-    std::vector<ksztalt> obroty;
-};
+// przechowuje wszystkie możliwe obroty danego klocka
+typedef std::vector<ksztalt> klocek;
 
 int wys, szer, k;
 std::vector<klocek> klocki;
 
 
-ksztalt init_ksztalt() {
-    ksztalt wynik;
-    std::vector<int> linia (szer, 0);
-    for (int i = 0; i < wys; i++) {
-        wynik.push_back(linia);
-    }
-    return wynik;
-}
-
-
 void drukuj_ksztalt(ksztalt xd) {
+    printf("\n");
+
+    std::vector<std::vector<int>> macierz;
+    std::vector<int> linia (szer, 0);
+    for (int i = 0; i < wys; i++)
+        macierz.push_back(linia);
+
+    for(int i = 0; i < xd.size(); i++)
+        macierz[xd[i].first][xd[i].second] = 1;
+
     for (int i = 0; i < wys; i++) {
         for (int j = 0; j < szer; j++) {
-            if (xd[i][j] == 0)
+            if (macierz[i][j] == 0)
                 printf(".");
             else
                 printf("X");
@@ -39,35 +39,72 @@ void drukuj_ksztalt(ksztalt xd) {
 
 // ustawia kształt w lewym górnym rogu (czyli będzie zajmował co najmniej jedno pole w 0-wej kolumnie i 0-wym wierszu)
 ksztalt ustaw_w_rogu(ksztalt xd) {
-    int margines_h = -1;
-    int margines_v = -1;
-
-    for (int i = 0; i < wys; i++) {
-        for (int j = 0; j < szer; j++) {
-            if (xd[i][j] != 0) {
-                margines_v = i;
-                break;
-            }
-        }
-        if (margines_v > -1)
-            break;
-    }
-    for (int j = 0; j < szer; j++) {
-        for (int i = 0; i < wys; i++) {
-            if (xd[i][j] != 0) {
-                margines_h = j;
-                break;
-            }
-        }
-        if (margines_h > -1)
-            break;
+    int margines_v = wys + 1;
+    int margines_h = szer + 1;
+    
+    for (int i = 0; i < xd.size(); i++) {
+        margines_v = (margines_v < xd[i].first) ? margines_v : xd[i].first;
+        margines_h = (margines_h < xd[i].second) ? margines_h : xd[i].second;
     }
 
-    ksztalt wynik = init_ksztalt();
+    ksztalt wynik;
+    for (int i = 0; i < xd.size(); i++)
+        wynik.push_back(std::make_pair(xd[i].first - margines_v, xd[i].second - margines_h));
 
-    for (int i = margines_v; i < wys; i++) {
-        for (int j = margines_h; j < szer; j++) {
-            wynik[i - margines_v][j - margines_h] = xd[i][j];
+    return wynik;
+}
+
+
+ksztalt obroc_o_180(ksztalt xd) {
+    ksztalt wynik;
+    for (int i = 0; i < xd.size(); i++)
+        wynik.push_back(std::make_pair(wys - xd[i].first - 1, szer - xd[i].second - 1));
+
+    wynik = ustaw_w_rogu(wynik);
+
+    return wynik;
+}
+
+
+ksztalt obroc_o_90(ksztalt xd) {
+    ksztalt wynik;
+    for (int i = 0; i < xd.size(); i++) {
+        // sprawdzanie czy po obróceniu kształt w ogóle mieści się na planszy
+        if (xd[i].first >= szer || xd[i].second >= wys) {
+            wynik[0].first = -1; // flaga
+            return wynik; 
+        }
+
+        // obrót o 90 stopni jest złożeniem odbicia symetrycznego wzdłuż prostej ukośnej i wzdłuż prostej pionowej
+        wynik.push_back(std::make_pair(xd[i].second, xd[i].first));
+        wynik[i].second = szer - wynik[i].second - 1;
+    }
+    wynik = ustaw_w_rogu(wynik);
+
+    return wynik;
+}
+
+// tworzy strukturę ze wszystkimi możliwymi obrotami
+klocek generuj_obroty(ksztalt xd) {
+    xd = ustaw_w_rogu(xd);
+    klocek wynik;
+    wynik.push_back(xd);
+
+    ksztalt obrot = obroc_o_180(xd);
+    if (obrot == xd) { // symetria względem punktu
+        obrot = obroc_o_90(xd);
+        if (obrot[0].first != -1 && obrot != xd)
+            wynik.push_back(obrot);
+    }
+    else {
+        wynik.push_back(obrot);
+
+        obrot = obroc_o_90(xd);
+        if (obrot[0].first != -1) {
+            wynik.push_back(obrot);
+
+            obrot = obroc_o_180(obrot);
+            wynik.push_back(obrot);
         }
     }
 
@@ -75,37 +112,14 @@ ksztalt ustaw_w_rogu(ksztalt xd) {
 }
 
 
-ksztalt obroc_o_180(ksztalt xd) {
-    for (int i = 0; i < wys / 2; i++) {
-        for (int j = 0; j < szer; j++) {
-            int temp = xd[i][j];
-            xd[i][j] = xd[wys - i - 1][szer - j - 1];
-            xd[wys - i - 1][szer - j - 1] = temp;
-        }
-    }
-    xd = ustaw_w_rogu(xd);
-    return xd;
-}
-
-
-klocek generuj_obroty(ksztalt xd) {
-    xd = ustaw_w_rogu(xd);
-    klocek wynik;
-    wynik.ile_obrotow = 1;
-    wynik.obroty.push_back(xd);
-
-
-}
-
-
 ksztalt wczytaj_ksztalt() {
-    ksztalt wynik = init_ksztalt();
+    ksztalt wynik;
     for (int rzad = 0; rzad < wys; rzad++) {
         for (int kol = 0; kol < szer; kol++) {
             char znak;
             scanf(" %c", &znak);
             if (znak != '.')
-                wynik[rzad][kol] = 1;
+                wynik.push_back(std::make_pair(rzad, kol));
         }
     }
     return wynik;
@@ -117,10 +131,10 @@ int main() {
 
     for (int i = 0; i < k; i++) {
         ksztalt ksz = wczytaj_ksztalt();
-        drukuj_ksztalt(ksz);
-        ksz = ustaw_w_rogu(ksz);
-        drukuj_ksztalt(ksz);
-        drukuj_ksztalt(obroc_o_180(ksz));
+        klocek klo = generuj_obroty(ksz);
+        for (int i = 0; i < klo.size(); i++) {
+            drukuj_ksztalt(klo[i]);
+        }
     }
 
     
