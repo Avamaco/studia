@@ -12,6 +12,7 @@ typedef std::vector<ksztalt> klocek;
 
 int wys, szer, k;
 std::vector<klocek> klocki;
+std::vector<std::vector<int>> plansza;
 
 
 void drukuj_ksztalt(ksztalt xd) {
@@ -126,15 +127,83 @@ ksztalt wczytaj_ksztalt() {
 }
 
 
+void init_plansza() {
+    std::vector<int> linia (szer, 0);
+    for (int i = 0; i < wys; i++)
+        plansza.push_back(linia);
+    
+    return;
+}
+
+
+struct ruch {
+    ksztalt wstawiany;
+    int rzad;
+    int kol;
+    int numer_klocka;
+};
+
+
+bool czy_pasuje(ruch r) {
+    for (int i = 0; i < r.wstawiany.size(); i++) {
+        int badany_rzad = r.wstawiany[i].first + r.rzad;
+        int badana_kol = r.wstawiany[i].second + r.kol;
+        if (badany_rzad >= wys || badana_kol >= szer || plansza[badany_rzad][badana_kol] != 0)
+            return false;
+    }
+    return true;
+}
+
+
+std::vector<ruch> mozliwe_ruchy(int ostatni_klocek) {
+    std::vector<ruch> wynik;
+
+    for (int i = ostatni_klocek + 1; i <= klocki.size(); i++) {
+        for(int j = 0; j < klocki[i].size(); j++) {
+            for (int rzad = 0; rzad < wys; rzad++) {
+                for (int kol = 0; kol <szer; kol++) {
+                    ruch r = {klocki[i][j], rzad, kol, i};
+                    if (czy_pasuje(r))
+                        wynik.push_back(r);
+                }
+            }
+        }
+    }
+
+    return wynik;
+}
+
+
+void ustaw_klocek(ruch r) {
+    for (int i = 0; i < r.wstawiany.size(); i++)
+        plansza[r.wstawiany[i].first + r.rzad][r.wstawiany[i].second + r.kol] = r.numer_klocka;
+    
+    return;
+}
+
+
+void usun_klocek(ruch r) {
+    for (int i = 0; i < r.wstawiany.size(); i++)
+        plansza[r.wstawiany[i].first + r.rzad][r.wstawiany[i].second + r.kol] = 0;
+    
+    return;
+}
+
+
+bool szukaj_ustawienia(int ostatni_klocek) {
+    
+}
+
+
 int main() {
+    init_plansza();
+    klocek atrapa;
+    klocki.push_back(atrapa); // żeby klocki były ponumerowane od 1
+
     scanf("%d%d%d", &wys, &szer, &k);
 
     for (int i = 0; i < k; i++) {
-        ksztalt ksz = wczytaj_ksztalt();
-        klocek klo = generuj_obroty(ksz);
-        for (int i = 0; i < klo.size(); i++) {
-            drukuj_ksztalt(klo[i]);
-        }
+        klocki.push_back(generuj_obroty(wczytaj_ksztalt()));
     }
 
     
