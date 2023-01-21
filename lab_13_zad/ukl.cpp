@@ -4,40 +4,20 @@
 #include <algorithm>
 #include <utility>
 
+
+typedef std::pair<int, int> wspolrzedne;
+
 // przechowuje współrzędne wszystkich pól zajętych przez kształt
-typedef std::vector<std::pair<int, int>> ksztalt; 
+typedef std::vector<wspolrzedne> ksztalt; 
 
 // przechowuje wszystkie możliwe obroty danego klocka
 typedef std::vector<ksztalt> klocek;
 
-int wys, szer, k;
-std::vector<klocek> klocki;
+int wys, szer, k; // wane wczytane na początku programu
+std::vector<klocek> klocki; // przechowuje wszystkie wczytane klocki
+std::vector<bool> dostepne; // pamięta, których klocków jeszcze nie wykorzystaliśmy
 std::vector<std::vector<int>> plansza;
-int wolne_pola;
-
-
-void drukuj_ksztalt(ksztalt xd) {
-    printf("\n");
-
-    std::vector<std::vector<int>> macierz;
-    std::vector<int> linia (szer, 0);
-    for (int i = 0; i < wys; i++)
-        macierz.push_back(linia);
-
-    for(int i = 0; i < xd.size(); i++)
-        macierz[xd[i].first][xd[i].second] = 1;
-
-    for (int i = 0; i < wys; i++) {
-        for (int j = 0; j < szer; j++) {
-            if (macierz[i][j] == 0)
-                printf(".");
-            else
-                printf("X");
-        }
-        printf("\n");
-    }
-    return;
-}
+int wolne_pola; // liczba pustych pól. Jeśli =0 to znaczy, że plansza została wypełniona
 
 // ustawia kształt w lewym górnym rogu (czyli będzie zajmował co najmniej jedno pole w 0-wej kolumnie i 0-wym wierszu)
 ksztalt ustaw_w_rogu(ksztalt xd) {
@@ -164,41 +144,50 @@ bool czy_pasuje(ruch r) {
     for (int i = 0; i < r.wstawiany.size(); i++) {
         int badany_rzad = r.wstawiany[i].first + r.rzad;
         int badana_kol = r.wstawiany[i].second + r.kol;
-        if (badany_rzad >= wys || badana_kol >= szer || plansza[badany_rzad][badana_kol] != 0)
+        if (badany_rzad >= wys || badana_kol >= szer || badana_kol < 0 || plansza[badany_rzad][badana_kol] != 0)
             return false;
     }
     return true;
 }
 
 
-std::vector<ruch> mozliwe_ruchy(int ostatni_klocek) {
+std::vector<ruch> mozliwe_ruchy(wspolrzedne pierwsze_wolne) {
     std::vector<ruch> wynik;
 
-    std::vector<std::vector<int>> osiagalne_pola = plansza;
-
-    for (int i = ostatni_klocek + 1; i <= klocki.size(); i++) {
+    for (int i = 1; i <= klocki.size(); i++) {
+        if (dostepne[i] == false)
+            continue;
         for(int j = 0; j < klocki[i].size(); j++) {
-            for (int rzad = 0; rzad < wys; rzad++) {
-                for (int kol = 0; kol < szer; kol++) {
-                    ruch r = {klocki[i][j], rzad, kol, i};
-                    if (czy_pasuje(r)) {
-                        wynik.push_back(r);
-                        for (int x = 0; x < r.wstawiany.size(); x++)
-                            osiagalne_pola[r.wstawiany[x].first + r.rzad][r.wstawiany[x].second + r.kol] = 1;
-                    }
-                }
-            }
-        }
-    }
-
-    for (int rzad = 0; rzad < wys; rzad++) {
-        for (int kol = 0; kol < szer; kol++) {
-            if (osiagalne_pola[rzad][kol] == 0)
-                wynik.clear();
+            ksztalt badany_ksztalt = klocki[i][j];
+            // dzięki posortowaniu części w kształcie, pierwszy fragment kształtu jest maksymalnie do góry i na lewo.
+            // offset liczy jak daleko od lewej krawędzi ten element się znajduje.
+            // przykłady: XX               .X               ..X
+            //            XX - offset 0    XX - offset 1    XXX - offset 2
+            int offset = badany_ksztalt[0].second;
+            ruch r = {klocki[i][j], pierwsze_wolne.first, pierwsze_wolne.second - offset, i};
+            if (czy_pasuje(r))
+                wynik.push_back(r);
         }
     }
 
     return wynik;
+}
+
+
+wspolrzedne nastepne_wolne(wspolrzedne szukaj_od) {
+    wspolrzedne sprawdzane = szukaj_od;
+
+    while (sprawdzane.first < wys) {
+        while (sprawdzane.second < szer) {
+            if (plansza[sprawdzane.first][sprawdzane.second] == 0)
+                return sprawdzane;
+            sprawdzane.second++;
+        }
+        sprawdzane.first++;
+        sprawdzane.second = 0;
+    }
+
+    return std::make_pair(0, 0);
 }
 
 
@@ -220,15 +209,15 @@ void usun_klocek(ruch r) {
 }
 
 
-bool szukaj_ustawienia(int ostatni_klocek) {
+bool szukaj_ustawienia(wspolrzedne pierwsze_wolne) {
     if (wolne_pola == 0)
         return true;
     
-    std::vector<ruch> nastepne = mozliwe_ruchy(ostatni_klocek);
+    std::vector<ruch> nastepne = mozliwe_ruchy(pierwsze_wolne);
 
     for (int i = 0; i < nastepne.size(); i++) {
         ustaw_klocek(nastepne[i]);
-        if (szukaj_ustawienia(nastepne[i].numer_klocka))
+        if (szukaj_ustawienia(nastepne_wolne(pierwsze_wolne)))
             return true;
         usun_klocek(nastepne[i]);    
     }
@@ -240,15 +229,17 @@ bool szukaj_ustawienia(int ostatni_klocek) {
 int main() {
     klocek atrapa;
     klocki.push_back(atrapa); // żeby klocki były ponumerowane od 1
+    dostepne.push_back(true);
 
     scanf("%d%d%d", &wys, &szer, &k);
     init_plansza();
 
     for (int i = 0; i < k; i++) {
         klocki.push_back(generuj_obroty(wczytaj_ksztalt()));
+        dostepne.push_back(true);
     }
 
-    bool mozliwe = szukaj_ustawienia(0);
+    bool mozliwe = szukaj_ustawienia(std::make_pair(0, 0));
 
     if (mozliwe) {
         printf("TAK\n");
