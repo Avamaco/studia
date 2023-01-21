@@ -13,6 +13,7 @@ typedef std::vector<ksztalt> klocek;
 int wys, szer, k;
 std::vector<klocek> klocki;
 std::vector<std::vector<int>> plansza;
+int wolne_pola;
 
 
 void drukuj_ksztalt(ksztalt xd) {
@@ -51,6 +52,8 @@ ksztalt ustaw_w_rogu(ksztalt xd) {
     ksztalt wynik;
     for (int i = 0; i < xd.size(); i++)
         wynik.push_back(std::make_pair(xd[i].first - margines_v, xd[i].second - margines_h));
+    
+    std::sort(wynik.begin(), wynik.end());
 
     return wynik;
 }
@@ -128,10 +131,23 @@ ksztalt wczytaj_ksztalt() {
 
 
 void init_plansza() {
+    wolne_pola = wys * szer;
     std::vector<int> linia (szer, 0);
     for (int i = 0; i < wys; i++)
         plansza.push_back(linia);
     
+    return;
+}
+
+
+void drukuj_plansze() {
+    for (int i = 0; i < wys; i++) {
+        for (int j = 0; j < szer; j++) {
+            char znak = plansza[i][j] + 'A' - 1;
+            printf("%c", znak);
+        }
+        printf("\n");
+    }
     return;
 }
 
@@ -175,6 +191,7 @@ std::vector<ruch> mozliwe_ruchy(int ostatni_klocek) {
 
 
 void ustaw_klocek(ruch r) {
+    wolne_pola -= r.wstawiany.size();
     for (int i = 0; i < r.wstawiany.size(); i++)
         plansza[r.wstawiany[i].first + r.rzad][r.wstawiany[i].second + r.kol] = r.numer_klocka;
     
@@ -183,6 +200,7 @@ void ustaw_klocek(ruch r) {
 
 
 void usun_klocek(ruch r) {
+    wolne_pola += r.wstawiany.size();
     for (int i = 0; i < r.wstawiany.size(); i++)
         plansza[r.wstawiany[i].first + r.rzad][r.wstawiany[i].second + r.kol] = 0;
     
@@ -191,22 +209,42 @@ void usun_klocek(ruch r) {
 
 
 bool szukaj_ustawienia(int ostatni_klocek) {
+    if (wolne_pola == 0)
+        return true;
     
+    std::vector<ruch> nastepne = mozliwe_ruchy(ostatni_klocek);
+
+    for (int i = 0; i < nastepne.size(); i++) {
+        ustaw_klocek(nastepne[i]);
+        if (szukaj_ustawienia(nastepne[i].numer_klocka))
+            return true;
+        usun_klocek(nastepne[i]);    
+    }
+
+    return false;
 }
 
 
 int main() {
-    init_plansza();
     klocek atrapa;
     klocki.push_back(atrapa); // żeby klocki były ponumerowane od 1
 
     scanf("%d%d%d", &wys, &szer, &k);
+    init_plansza();
 
     for (int i = 0; i < k; i++) {
         klocki.push_back(generuj_obroty(wczytaj_ksztalt()));
     }
 
-    
+    bool mozliwe = szukaj_ustawienia(0);
+
+    if (mozliwe) {
+        printf("TAK\n");
+        drukuj_plansze();
+    }
+    else {
+        printf("NIE\n");
+    }
 
     return 0;
 }
