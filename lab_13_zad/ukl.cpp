@@ -13,14 +13,14 @@ typedef std::vector<wspolrzedne> ksztalt;
 // przechowuje wszystkie możliwe obroty danego klocka
 typedef std::vector<ksztalt> klocek;
 
-int wys, szer, k; // wane wczytane na początku programu
+int wys, szer, k; // dane wczytane na początku programu
 std::vector<klocek> klocki; // przechowuje wszystkie wczytane klocki
 std::vector<bool> dostepne; // pamięta, których klocków jeszcze nie wykorzystaliśmy
 std::vector<std::vector<int>> plansza;
 int wolne_pola; // liczba pustych pól. Jeśli =0 to znaczy, że plansza została wypełniona
 
 // ustawia kształt w lewym górnym rogu (czyli będzie zajmował co najmniej jedno pole w 0-wej kolumnie i 0-wym wierszu)
-ksztalt ustaw_w_rogu(ksztalt xd) {
+ksztalt ustaw_w_rogu(ksztalt &xd) {
     int margines_v = wys + 1;
     int margines_h = szer + 1;
     
@@ -39,7 +39,7 @@ ksztalt ustaw_w_rogu(ksztalt xd) {
 }
 
 
-ksztalt obroc_o_180(ksztalt xd) {
+ksztalt obroc_o_180(ksztalt &xd) {
     ksztalt wynik;
     for (int i = 0; i < xd.size(); i++)
         wynik.push_back(std::make_pair(wys - xd[i].first - 1, szer - xd[i].second - 1));
@@ -50,7 +50,7 @@ ksztalt obroc_o_180(ksztalt xd) {
 }
 
 
-ksztalt obroc_o_90(ksztalt xd) {
+ksztalt obroc_o_90(ksztalt &xd) {
     ksztalt wynik;
     for (int i = 0; i < xd.size(); i++) {
         // sprawdzanie czy po obróceniu kształt w ogóle mieści się na planszy
@@ -68,7 +68,7 @@ ksztalt obroc_o_90(ksztalt xd) {
     return wynik;
 }
 
-// tworzy strukturę ze wszystkimi możliwymi obrotami
+// tworzy wektor ze wszystkimi możliwymi obrotami kształtu
 klocek generuj_obroty(ksztalt xd) {
     xd = ustaw_w_rogu(xd);
     klocek wynik;
@@ -109,7 +109,7 @@ ksztalt wczytaj_ksztalt() {
     return wynik;
 }
 
-
+// generuje pustą planszę
 void init_plansza() {
     wolne_pola = wys * szer;
     std::vector<int> linia (szer, 0);
@@ -131,16 +131,16 @@ void drukuj_plansze() {
     return;
 }
 
-
+// wszystkie potrzebne informacje dotyczące wykonywanego ruchu
 struct ruch {
-    ksztalt wstawiany;
+    ksztalt &wstawiany;
     int rzad;
     int kol;
     int numer_klocka;
 };
 
-
-bool czy_pasuje(ruch r) {
+// sprawdza czy po wykonaniu ruchu klocki się nie nachodzą albo nie wystają poza planszę
+bool czy_pasuje(ruch &r) {
     for (int i = 0; i < r.wstawiany.size(); i++) {
         int badany_rzad = r.wstawiany[i].first + r.rzad;
         int badana_kol = r.wstawiany[i].second + r.kol;
@@ -150,15 +150,15 @@ bool czy_pasuje(ruch r) {
     return true;
 }
 
-
-std::vector<ruch> mozliwe_ruchy(wspolrzedne pierwsze_wolne) {
-    std::vector<ruch> wynik;
+// Generuje wszystkie możliwe ruchy, KTÓRE ZAJMĄ PIERWSZE PUSTE POLE.
+// Pola w całym programie pola są zajmowane z góry na dół, od lewej do prawej.
+void mozliwe_ruchy(wspolrzedne &pierwsze_wolne, std::vector<ruch> &wynik) {
 
     for (int i = 1; i <= klocki.size(); i++) {
         if (dostepne[i] == false)
             continue;
         for(int j = 0; j < klocki[i].size(); j++) {
-            ksztalt badany_ksztalt = klocki[i][j];
+            ksztalt &badany_ksztalt = klocki[i][j];
             // dzięki posortowaniu części w kształcie, pierwszy fragment kształtu jest maksymalnie do góry i na lewo.
             // offset liczy jak daleko od lewej krawędzi ten element się znajduje.
             // przykłady: XX               .X               ..X
@@ -170,10 +170,10 @@ std::vector<ruch> mozliwe_ruchy(wspolrzedne pierwsze_wolne) {
         }
     }
 
-    return wynik;
+    return;
 }
 
-
+// znajduje pierwsze niezajęte pole (idąc z góry na dół, od lewej do prawej)
 wspolrzedne nastepne_wolne(wspolrzedne szukaj_od) {
     wspolrzedne sprawdzane = szukaj_od;
 
@@ -191,29 +191,32 @@ wspolrzedne nastepne_wolne(wspolrzedne szukaj_od) {
 }
 
 
-void ustaw_klocek(ruch r) {
+void ustaw_klocek(ruch &r) {
     wolne_pola -= r.wstawiany.size();
     for (int i = 0; i < r.wstawiany.size(); i++)
         plansza[r.wstawiany[i].first + r.rzad][r.wstawiany[i].second + r.kol] = r.numer_klocka;
+    dostepne[r.numer_klocka] = false;
     
     return;
 }
 
 
-void usun_klocek(ruch r) {
+void usun_klocek(ruch &r) {
     wolne_pola += r.wstawiany.size();
     for (int i = 0; i < r.wstawiany.size(); i++)
         plansza[r.wstawiany[i].first + r.rzad][r.wstawiany[i].second + r.kol] = 0;
+    dostepne[r.numer_klocka] = true;
     
     return;
 }
 
-
+// backtrack.
 bool szukaj_ustawienia(wspolrzedne pierwsze_wolne) {
     if (wolne_pola == 0)
         return true;
     
-    std::vector<ruch> nastepne = mozliwe_ruchy(pierwsze_wolne);
+    std::vector<ruch> nastepne;
+    mozliwe_ruchy(pierwsze_wolne, nastepne);
 
     for (int i = 0; i < nastepne.size(); i++) {
         ustaw_klocek(nastepne[i]);
