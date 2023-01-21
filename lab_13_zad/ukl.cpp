@@ -174,15 +174,27 @@ bool czy_pasuje(ruch r) {
 std::vector<ruch> mozliwe_ruchy(int ostatni_klocek) {
     std::vector<ruch> wynik;
 
+    std::vector<std::vector<int>> osiagalne_pola = plansza;
+
     for (int i = ostatni_klocek + 1; i <= klocki.size(); i++) {
         for(int j = 0; j < klocki[i].size(); j++) {
             for (int rzad = 0; rzad < wys; rzad++) {
-                for (int kol = 0; kol <szer; kol++) {
+                for (int kol = 0; kol < szer; kol++) {
                     ruch r = {klocki[i][j], rzad, kol, i};
-                    if (czy_pasuje(r))
+                    if (czy_pasuje(r)) {
                         wynik.push_back(r);
+                        for (int x = 0; x < r.wstawiany.size(); x++)
+                            osiagalne_pola[r.wstawiany[x].first + r.rzad][r.wstawiany[x].second + r.kol] = 1;
+                    }
                 }
             }
+        }
+    }
+
+    for (int rzad = 0; rzad < wys; rzad++) {
+        for (int kol = 0; kol < szer; kol++) {
+            if (osiagalne_pola[rzad][kol] == 0)
+                wynik.clear();
         }
     }
 
