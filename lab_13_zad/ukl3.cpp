@@ -38,20 +38,20 @@ int wolne_pola; // liczba pustych pól. Jeśli =0 to znaczy, że plansza został
 void drukuj_plansze() {
     std::vector<std::vector<char>> do_druku;
     std::vector<char> rzad;
-    for (int i = 0; i < szer; i++)
+    for (size_t i = 0; i < (size_t)szer; i++)
         rzad.push_back('.');
-    for (int i = 0; i < wys; i++) 
+    for (size_t i = 0; i < (size_t)wys; i++) 
         do_druku.push_back(rzad);
     
-    for (int i = 0; i < uklad_klockow.size(); i++) {
+    for (size_t i = 0; i < uklad_klockow.size(); i++) {
         ruch &r = uklad_klockow[i];
-        for (int j = 0; j < r.wstawiany.czesci.size(); j++) {
-            do_druku[r.wstawiany.czesci[j].first + r.rzad][r.wstawiany.czesci[j].second + r.kol] = r.numer_klocka + 'A';
+        for (size_t j = 0; j < r.wstawiany.czesci.size(); j++) {
+            do_druku[r.wstawiany.czesci[j].first + r.rzad][r.wstawiany.czesci[j].second + r.kol] = (char)(r.numer_klocka + 'A');
         }
     }
 
-    for (int i = 0; i < wys; i++) {
-        for (int j = 0; j < szer; j++)
+    for (size_t i = 0; i < (size_t)wys; i++) {
+        for (size_t j = 0; j < (size_t)szer; j++)
             printf("%c", do_druku[i][j]);
         printf("\n");
     }
@@ -64,12 +64,12 @@ void ustaw_w_rogu(ksztalt &k) {
     int margines_v = wys + 1;
     int margines_h = szer + 1;
     
-    for (int i = 0; i < k.czesci.size(); i++) {
+    for (size_t i = 0; i < k.czesci.size(); i++) {
         margines_v = (margines_v < k.czesci[i].first) ? margines_v : k.czesci[i].first;
         margines_h = (margines_h < k.czesci[i].second) ? margines_h : k.czesci[i].second;
     }
 
-    for (int i = 0; i < k.czesci.size(); i++) {
+    for (size_t i = 0; i < k.czesci.size(); i++) {
         k.czesci[i].first -= margines_v;
         k.czesci[i].second -= margines_h;
     }
@@ -84,7 +84,7 @@ void policz_wymiary(ksztalt &k) {
     int wys_ksztaltu = 0;
     int szer_ksztaltu = 0;
     
-    for (int i = 0; i < k.czesci.size(); i++) {
+    for (size_t i = 0; i < k.czesci.size(); i++) {
         wys_ksztaltu = (wys_ksztaltu > k.czesci[i].first) ? wys_ksztaltu : k.czesci[i].first;
         szer_ksztaltu = (szer_ksztaltu > k.czesci[i].second) ? szer_ksztaltu : k.czesci[i].second;
     }
@@ -97,7 +97,7 @@ void policz_wymiary(ksztalt &k) {
 
 
 void obroc_o_180(ksztalt &k) {
-    for (int i = 0; i < k.czesci.size(); i++) {
+    for (size_t i = 0; i < k.czesci.size(); i++) {
         k.czesci[i].first = wys - k.czesci[i].first - 1;
         k.czesci[i].second = szer - k.czesci[i].second - 1;
     }
@@ -111,7 +111,7 @@ bool obroc_o_90(ksztalt &k) {
     if (k.szer > szer || k.wys > wys)
         return false;
     
-    for (int i = 0; i < k.czesci.size(); i++)
+    for (size_t i = 0; i < k.czesci.size(); i++)
         k.czesci[i] = std::make_pair(k.czesci[i].second, szer - k.czesci[i].first - 1);
     
     int temp = k.wys;
@@ -128,17 +128,17 @@ void generuj_maski(ksztalt &k) {
     k.maski_bitowe.clear();
     std::vector<maska> maska_rzedu;
     maska pierwsza = 0;
-    for (int i = 0; i < k.czesci.size(); i++) {
+    for (size_t i = 0; i < k.czesci.size(); i++) {
         pierwsza[k.czesci[i].first * szer + k.czesci[i].second] = 1;
     }
     
     maska_rzedu.push_back(pierwsza);
-    for (int i = 1; i < szer; i++)
+    for (size_t i = 1; i < (size_t)szer; i++)
         maska_rzedu.push_back(maska_rzedu[i - 1] << 1);
     
     k.maski_bitowe.push_back(maska_rzedu);
-    for (int i = 1; i < wys; i++) {
-        for (int j = 0; j < szer; j++)
+    for (size_t i = 1; i < (size_t)wys; i++) {
+        for (size_t j = 0; j < (size_t)szer; j++)
             maska_rzedu[j] = maska_rzedu[j] << szer;
         k.maski_bitowe.push_back(maska_rzedu);
     }
@@ -149,10 +149,12 @@ void generuj_maski(ksztalt &k) {
 
 ksztalt wczytaj_ksztalt() {
     ksztalt wynik;
-    for (int rzad = 0; rzad < wys; rzad++) {
-        for (int kol = 0; kol < szer; kol++) {
+    for (size_t rzad = 0; rzad < (size_t)wys; rzad++) {
+        for (size_t kol = 0; kol < (size_t)szer; kol++) {
             char znak;
-            scanf(" %c", &znak);
+            int czyok = scanf(" %c", &znak);
+            if (czyok == 0)
+                printf("Błędne wejście\n");
             if (znak != '.')
                 wynik.czesci.push_back(std::make_pair(rzad, kol));
         }
@@ -188,7 +190,7 @@ klocek generuj_klocek(ksztalt k) {
         }
     }
 
-    for (int i = 0; i < wynik.size(); i++)
+    for (size_t i = 0; i < wynik.size(); i++)
         generuj_maski(wynik[i]);
     
     return wynik;
@@ -223,17 +225,17 @@ poz nastepne_wolne(poz szukaj_od) {
 
 void mozliwe_ruchy(poz pierwsze_wolne, std::vector<ruch> &wynik) {
 
-    for (int i = 0; i < klocki.size(); i++) {
+    for (size_t i = 0; i < klocki.size(); i++) {
         if (dostepne[i] == false)
             continue;
-        for(int j = 0; j < klocki[i].size(); j++) {
+        for (size_t j = 0; j < klocki[i].size(); j++) {
             ksztalt &badany_ksztalt = klocki[i][j];
             // dzięki posortowaniu części w kształcie, pierwszy fragment kształtu jest maksymalnie do góry i na lewo.
             // offset liczy jak daleko od lewej krawędzi ten element się znajduje.
             // przykłady: XX               .X               ..X
             //            XX - offset 0    XX - offset 1    XXX - offset 2
             int offset = badany_ksztalt.czesci[0].second;
-            ruch r = {badany_ksztalt, i, pierwsze_wolne.first, pierwsze_wolne.second - offset};
+            ruch r = {badany_ksztalt, (int)i, pierwsze_wolne.first, pierwsze_wolne.second - offset};
 
             if (czy_pasuje(r))
                 wynik.push_back(r);
@@ -247,7 +249,7 @@ void mozliwe_ruchy(poz pierwsze_wolne, std::vector<ruch> &wynik) {
 void ustaw_klocek(ruch &r) {
     plansza |= r.wstawiany.maski_bitowe[r.rzad][r.kol];
     uklad_klockow.push_back(r);
-    wolne_pola -= r.wstawiany.czesci.size();
+    wolne_pola -= (int)r.wstawiany.czesci.size();
     dostepne[r.numer_klocka] = false;
     return;
 }
@@ -256,7 +258,7 @@ void ustaw_klocek(ruch &r) {
 void usun_klocek(ruch &r) {
     plansza ^= r.wstawiany.maski_bitowe[r.rzad][r.kol];
     uklad_klockow.pop_back();
-    wolne_pola += r.wstawiany.czesci.size();
+    wolne_pola += (int)r.wstawiany.czesci.size();
     dostepne[r.numer_klocka] = true;
     return;
 }
@@ -269,7 +271,7 @@ bool szukaj_ustawienia(poz pierwsze_wolne) {
     std::vector<ruch> nastepne;
     mozliwe_ruchy(pierwsze_wolne, nastepne);
 
-    for (int i = 0; i < nastepne.size(); i++) {
+    for (size_t i = 0; i < nastepne.size(); i++) {
         ustaw_klocek(nastepne[i]);
         if (szukaj_ustawienia(nastepne_wolne(pierwsze_wolne)))
             return true;
@@ -282,12 +284,16 @@ bool szukaj_ustawienia(poz pierwsze_wolne) {
 
 int main() {
     int k;
-    scanf("%d%d%d", &wys, &szer, &k);
+    int czyok = scanf("%d%d%d", &wys, &szer, &k);
+    if (czyok != 3) {
+        printf("Błędne wejście\n");
+        return 0;
+    }
 
     plansza = 0;
     wolne_pola = wys * szer;
 
-    for(int i = 0; i < k; i++) {
+    for (int i = 0; i < k; i++) {
         ksztalt ksz = wczytaj_ksztalt();
         klocki.push_back(generuj_klocek(ksz));
         dostepne[i] = true;
