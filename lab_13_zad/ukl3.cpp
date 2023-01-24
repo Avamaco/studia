@@ -4,19 +4,20 @@
 #include <algorithm>
 #include <utility>
 #include <bitset>
-
+#include <cstring>
 
 typedef std::pair<int, int> poz;
 
 typedef std::bitset<100> maska;
 
 struct ksztalt {
-    std::vector<poz> czesci; // pozycje wszystkich części klocka
+    std::vector<poz> czesci; // pozycje wszystkich części kształtu
     std::vector<std::vector<maska>> maski_bitowe; // maski bitowe kształtu we wszystkich możliwych miejscach na planszy
     int wys;
     int szer;
 };
 
+// przechowuje wszystkie możliwe obroty kształtu
 typedef std::vector<ksztalt> klocek;
 
 struct ruch {
@@ -26,12 +27,12 @@ struct ruch {
     int kol;
 };
 
-int wys, szer;
-std::vector<klocek> klocki;
-std::bitset<10> dostepne;
+int wys, szer; // wymiary planszy
+std::vector<klocek> klocki; // wszystkie wczytane klocki
+std::bitset<10> dostepne; // czy dany klocek jeszcze nie został użyty
 
-maska plansza;
-std::vector<ruch> uklad_klockow;
+maska plansza; // maska bitowa zajętych pól
+std::vector<ruch> uklad_klockow; // wszystkie wykonane po kolei ruchy w danym rozwiązaniu
 int wolne_pola; // liczba pustych pól. Jeśli =0 to znaczy, że plansza została wypełniona
 
 
@@ -206,20 +207,11 @@ bool czy_pasuje(ruch &r) {
 }
 
 // znajduje pierwsze niezajęte pole (idąc z góry na dół, od lewej do prawej)
-poz nastepne_wolne(poz szukaj_od) {
-    poz sprawdzane = szukaj_od;
-
-    while (sprawdzane.first < wys) {
-        while (sprawdzane.second < szer) {
-            if (!plansza[sprawdzane.first * szer + sprawdzane.second])
-                return sprawdzane;
-            sprawdzane.second++;
-        }
-        sprawdzane.first++;
-        sprawdzane.second = 0;
-    }
-
-    return std::make_pair(0, 0);
+poz nastepne_wolne() {
+    plansza.flip();
+    int p = (int)plansza._Find_first();
+    plansza.flip();
+    return std::make_pair(p / szer, p % szer);
 }
 
 
@@ -264,16 +256,16 @@ void usun_klocek(ruch &r) {
 }
 
 // backtrack.
-bool szukaj_ustawienia(poz pierwsze_wolne) {
+bool szukaj_ustawienia() {
     if (wolne_pola == 0)
         return true;
     
     std::vector<ruch> nastepne;
-    mozliwe_ruchy(pierwsze_wolne, nastepne);
+    mozliwe_ruchy(nastepne_wolne(), nastepne);
 
     for (size_t i = 0; i < nastepne.size(); i++) {
         ustaw_klocek(nastepne[i]);
-        if (szukaj_ustawienia(nastepne_wolne(pierwsze_wolne)))
+        if (szukaj_ustawienia())
             return true;
         usun_klocek(nastepne[i]);    
     }
@@ -283,6 +275,7 @@ bool szukaj_ustawienia(poz pierwsze_wolne) {
 
 
 int main() {
+    // Wczytywanie danych
     int k;
     int czyok = scanf("%d%d%d", &wys, &szer, &k);
     if (czyok != 3) {
@@ -299,8 +292,10 @@ int main() {
         dostepne[i] = true;
     }
 
-    bool mozliwe = szukaj_ustawienia(std::make_pair(0, 0));
+    // Uruchomienie backtracka
+    bool mozliwe = szukaj_ustawienia();
 
+    // Drukowanie wyniku
     if (mozliwe) {
         printf("TAK\n");
         drukuj_plansze();
