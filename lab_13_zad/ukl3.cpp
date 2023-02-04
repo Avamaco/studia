@@ -1,3 +1,5 @@
+// Autor: Maciej Curulak
+// Code review: Jacek Kajdan
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
@@ -216,7 +218,6 @@ poz nastepne_wolne() {
 
 
 void mozliwe_ruchy(poz pierwsze_wolne, std::vector<ruch> &wynik) {
-
     for (size_t i = 0; i < klocki.size(); i++) {
         if (dostepne[i] == false)
             continue;
